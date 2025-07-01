@@ -1,52 +1,34 @@
+// index.js or server.js
 const express = require('express');
-const router = express.Router();
+const cors = require('cors');
 const mongoose = require('mongoose');
+require('dotenv').config(); // for .env support
 
-const revenueSchema = new mongoose.Schema({
-  description: String,
-  amount: Number,
-  category: String,
-  date: String,
-  status: String,
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ✅ Use middlewares
+app.use(cors()); // 💥 This fixes the CORS issue
+app.use(express.json()); // To parse JSON
+
+// ✅ Connect to MongoDB (edit this with your connection string)
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log("MongoDB connected"))
+.catch(err => console.log("Mongo Error:", err));
+
+// ✅ Revenue Route
+const revenueRoutes = require('./routes/revenue');
+app.use('/api/revenue', revenueRoutes); // This makes /api/revenue work
+
+// ✅ Optional default route
+app.get('/', (req, res) => {
+  res.send('Backend is working!');
 });
 
-const Revenue = mongoose.model('Revenue', revenueSchema);
-
-router.get('/', async (req, res) => {
-  try {
-    const revenue = await Revenue.find();
-    res.json(revenue);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch revenue' });
-  }
+// ✅ Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
-router.post('/', async (req, res) => {
-  try {
-    const revenue = new Revenue(req.body);
-    await revenue.save();
-    res.status(201).json(revenue);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to add revenue' });
-  }
-});
-
-router.put('/:id', async (req, res) => {
-  try {
-    const updated = await Revenue.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updated);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update revenue' });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    await Revenue.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Revenue deleted' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete revenue' });
-  }
-});
-
-module.exports = router;
