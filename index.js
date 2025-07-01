@@ -1,9 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
-
 const app = express();
+const cors = require('cors');
+
+// Allow frontend origin
+app.use(cors({
+  origin: '*', // use '*' for development, restrict later for production
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+}));
+
+app.use(express.json());    
+
 
 // Middleware
 app.use(cors());
