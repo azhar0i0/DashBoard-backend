@@ -1,34 +1,48 @@
-// index.js or server.js
 const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-require('dotenv').config(); // for .env support
+const Revenue = require('../models/Revenue');
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const router = express.Router();
 
-// ✅ Use middlewares
-app.use(cors()); // 💥 This fixes the CORS issue
-app.use(express.json()); // To parse JSON
-
-// ✅ Connect to MongoDB (edit this with your connection string)
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log("MongoDB connected"))
-.catch(err => console.log("Mongo Error:", err));
-
-// ✅ Revenue Route
-const revenueRoutes = require('./routes/revenue');
-app.use('/api/revenue', revenueRoutes); // This makes /api/revenue work
-
-// ✅ Optional default route
-app.get('/', (req, res) => {
-  res.send('Backend is working!');
+// ✅ Get all revenue entries
+router.get('/', async (req, res) => {
+  try {
+    const revenues = await Revenue.find().sort({ date: -1 }); // sort by latest
+    res.json(revenues);
+  } catch (error) {
+    console.error("❌ Error fetching revenues:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// ✅ Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// ✅ Add new revenue
+router.post('/', async (req, res) => {
+  try {
+    const newRevenue = new Revenue(req.body);
+    await newRevenue.save();
+    res.status(201).json(newRevenue);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
+
+// ✅ Update a revenue entry
+router.put('/:id', async (req, res) => {
+  try {
+    const updated = await Revenue.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updated);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// ✅ Delete a revenue entry
+router.delete('/:id', async (req, res) => {
+  try {
+    await Revenue.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Revenue deleted' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+module.exports = router;

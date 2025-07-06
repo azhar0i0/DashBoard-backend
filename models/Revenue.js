@@ -1,23 +1,18 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const revenueSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  amount: {
-    type: Number,
-    required: true,
-  },
-  source: {
-    type: String,
-    required: true,
-  },
+  name: String,
+  description: String,
+  amount: Number,
   date: {
     type: Date,
-    default: Date.now,
+    default: Date.now
   },
+  category: String,
+  status: {
+    type: String,
+    default: 'active'
+  }
 });
 
-module.exports = mongoose.model("Revenue", revenueSchema);
-    
+module.exports = mongoose.model('Revenue', revenueSchema);

@@ -30,6 +30,7 @@ router.put('/:id', async (req, res) => {
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
+    console.log(`error is happening , hehe : ${id}`)
   }
 });
 

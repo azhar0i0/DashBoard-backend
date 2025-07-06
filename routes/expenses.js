@@ -12,6 +12,7 @@ const expenseSchema = new mongoose.Schema({
 
 const Expense = mongoose.model('Expense', expenseSchema);
 
+// GET all expenses
 router.get('/', async (req, res) => {
   try {
     const expenses = await Expense.find();
@@ -21,6 +22,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+// POST new expense
 router.post('/', async (req, res) => {
   try {
     const expense = new Expense(req.body);
@@ -31,9 +33,34 @@ router.post('/', async (req, res) => {
   }
 });
 
+// PUT/update existing expense
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedExpense = await Expense.findByIdAndUpdate(
+      req.params.id,  // Make sure this matches :id in the route
+      req.body,
+      { new: true }
+    );
+    
+    if (!updatedExpense) {
+      return res.status(404).json({ error: 'Expense not found' });
+    }
+    
+    res.json(updatedExpense);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update expense' });
+  }
+});
+
+// DELETE expense
 router.delete('/:id', async (req, res) => {
   try {
-    await Expense.findByIdAndDelete(req.params.id);
+    const deletedExpense = await Expense.findByIdAndDelete(req.params.id);
+    
+    if (!deletedExpense) {
+      return res.status(404).json({ error: 'Expense not found' });
+    }
+    
     res.json({ message: 'Expense deleted' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete expense' });
